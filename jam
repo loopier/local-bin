@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ "$#" -eq 0 ]; then
+    JAMPATH="jam-$(date +%Y%m%d-%H%M)"
+    mkdir $JAMPATH
+    cd $JAMPATH
+    touch "${JAMPATH}.tidal"
+else
+    JAMPATH=$1
+    cd $JAMPATH
+fi
+
+i3-msg 'workspace 3:Jam'
+# st -e tidalvim &
+xfce4-terminal -e ~/.local/bin/jamvim 
