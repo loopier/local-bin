@@ -1,1 +1,2 @@
-/Users/roger/Dropbox/scripts/org.sh
+#!/bin/bash
+emacs ~/working/work.org

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Setup to play live-coding session and record, stream or project it.
+
+jam $1
+i3-msg 'workspace 4:OBS'
+obs &

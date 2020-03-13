@@ -1,6 +1,10 @@
 #!/bin/bash
 
-if [ "$#" -eq 0 ]; then
+# Setup to play live-coding in i3wm
+
+# if [ "$#" -eq 0 ]; then
+if [ -z "$1" ]; then
+    cd ~/loopier/sketches
     JAMPATH="jam-$(date +%Y%m%d-%H%M)"
     mkdir $JAMPATH
     cd $JAMPATH
@@ -12,4 +16,4 @@ fi
 
 i3-msg 'workspace 3:Jam'
 # st -e tidalvim &
-xfce4-terminal -e ~/.local/bin/jamvim 
+xfce4-terminal -T "Jam" --zoom 2 -e ~/.local/bin/jamvim 
