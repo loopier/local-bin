@@ -4,11 +4,12 @@ import os
 import configparser
 import glob
 
-parser = argparse.ArgumentParser(description="Tags system for files.")
+parser = argparse.ArgumentParser(description="Tag system for files.")
 parser.add_argument('-p', '--path', metavar="", help="path to the tags directory")
 # parser.add_argument('-t', '--tags', action="append", nargs='+', metavar="", help="path to the tags directory")
+parser.add_argument('-f', '--filename', metavar="", help="name of the file to tag")
 parser.add_argument('tags', action="append", nargs='*', metavar="", help="list of tags")
-parser.add_argument('-f', '--filename', help="name of the file to tag")
+parser.add_argument('-d', '--delete', metavar="", help="remove tags")
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-q', '--quiet', action="store_true", help="print quiet")
 group.add_argument('-v', '--verbose', action="store_true", help="print verbose")
@@ -28,22 +29,32 @@ def loadConfig():
     global tagspath
     tagspath = os.path.expanduser(config["default"]["path"])
 
+
 def getFileInode(filename):
     """Return the inode number for FILENAME"""
-    return os.stat(filename).st_ino
+    try:
+        return os.stat(filename).st_ino
+    except FileNotFoundError:
+        return None
+
+def getUniqueTags(tags):
+    """Return unique tags in list."""
+    return sorted(list(set(tags)))
 
 def getLinksWith(searchstrings):
     """Return LINKS with SEARCHSTR."""
     print("parsing links looking for: {}".format(searchstrings))
 
-    for i, searchstring in enumerate(searchstrings[0]):
+    taggedfiles = ""
+
+    for i, searchstring in enumerate(searchstrings):
         taggedfiles = glob.glob("{}/*{}*".format(tagspath, searchstring))
 
     return taggedfiles
 
 def getLinksWithInode(inode):
     """Return files with INODE."""
-    return getLinksWith(inode)
+    return getLinksWith([inode])
 
 def getLinksWithTags(tags):
     """Return files with TAG."""
@@ -66,33 +77,82 @@ def getFileTags(filename):
 
     tags = []
     for link in links:
-        tags = tags + os.path.basename(link).split(':')[1:]
+        tag = os.path.basename(link).split(':')[1:]
+        tags = tags + tag
+        # print(tag)
 
-    # get unique values
-    tags = (list(set(tags)))
+    tags = getUniqueTags(tags)
     print("Tags for {}: {}".format(filename, tags))
     return tags
 
-def tagFile(filename, tags):
-    """Tags a FILENAME with a list of TAGS."""
-    fileId = getFileInode(filename)
-    basename = os.path.basename(filename)
-    # TODO: figure out if it's better to include the filename in the symlink string
-    # tagstr = "{}/{}:{}".format(tagspath, fileId, basename)
-    tagstr = "{}/{}".format(tagspath, fileId)
 
-    for tag in tags[0]:
+def hasTag(filename, tag):
+    """Returns TRUE if FILENAME already has the TAG."""
+    return false
+
+def fileIsTagged(filename):
+    """Returns TRUE if FILENAME already has tags."""
+    tagged = glob.glob("{}/*{}*".format(tagspath, getFileInode(filename)))
+    return (len(tagged) > 0)
+
+
+def createTagString(tags):
+    """Returns a string with TAGS separated by ':'"""
+    tagstr = ""
+    for tag in tags:
+        # if tag in existingfiletags:
+        #     print("'{}' already has the tag #{} ... skipping".format(filename, tag))
+        #     continue
+        # else:
+        #     tagstr += ":{}".format(tag)
         tagstr += ":{}".format(tag)
+    return tagstr
 
-    os.symlink(filename, tagstr)
-    # print("link cmd: {}".format(tagstr))
+def createTagLink(filename, tags):
+    """Creates a symlink named TAGSTR in the tags directory targetting FILENAME."""
+    fileId = getFileInode(filename)
+    # TODO: figure out if it's better to include the filename in the symlink string
+    # basename = os.path.basename(filename)
+    # tagstr = "{}/{}:{}".format(tagspath, fileId, basename)
+    tagstr = createTagString(tags)
+    linkpath = "{}/{}{}".format(tagspath, fileId, tagstr)
+    print("filename: {}".format(filename))
+    print("linkpath: {}".format(linkpath))
+    print("tagspath: {}".format(tagspath))
+    print("id: {}".format(fileId))
 
-    if verbose:
-        print("{} tags where added to '{}' - {}".format(tags, filename, tagstr))
-    elif quiet:
-        pass
-    else:
-        print("'{}' tagged with {}".format(filename, tags))
+    try:
+        os.symlink(filename, linkpath)
+    except FileExistsError:
+        print("File alrady has all tags: {} ... skipping".format(tagstr))
+    print("link cmd: {}".format(linkpath))
+
+def deleteTagLink(link):
+    """Deletes the LINK."""
+    linkpath = "{}/*{}*".format(tagspath, link)
+    for f in glob.glob(linkpath):
+        os.remove(f)
+
+
+def addTags(filename, newtags):
+    """Tags a FILENAME with a list of TAGS."""
+    print("file is tagged: {}".format(fileIsTagged(filename)))
+
+    existingfiletags = []
+
+    if (fileIsTagged(filename)):
+        existingfiletags = getFileTags(filename)
+        deleteTagLink(getFileInode(filename))
+
+    tags = getUniqueTags(newtags + existingfiletags)
+    createTagLink(filename, tags)
+    print("Tags: {}".format(tags))
+
+def removeTags(filename, tags):
+    """Remove TAGS from FILENAME."""
+    oldtags = getFileTags(filename)
+    print("Removing {} from {}".format(tags, oldtags))
+
 
 if __name__ == "__main__":
     loadConfig()
@@ -101,9 +161,15 @@ if __name__ == "__main__":
         if len(args.tags[0]) == 0:
             getFileTags(args.filename)
         else:
-            tagFile(args.filename, args.tags)
+            if args.delete:
+                print("delete")
+                # TODO fix DELETE
+                removeTags(args.filename, args.tags[0])
+            else:
+                addTags(args.filename, args.tags[0])
     else:
-        listFiles(args.tags)
+        listFiles(args.tags[0])
+
 
     if args.quiet:
         print("...")
