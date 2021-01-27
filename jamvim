@@ -30,23 +30,25 @@ fi
 
 # list files in one line
 FILE=$(ls -1 | tr '\n' ' ')
-SESSION=${SESSION:-"tidal"}
+# SESSION=${SESSION:-"tidal"}
 
-TIDAL_BOOT_PATH=${TIDAL_BOOT_PATH:-""}
-GHCI=${GHCI:-""}
+echo $FILE
+
+# TIDAL_BOOT_PATH=${TIDAL_BOOT_PATH:-""}
+# GHCI=${GHCI:-""}
 
 # args=${@:-$FILE}
-args=${FILE}
+# args=${FILE}
 
-# Check if tmux session "tidal" is running, attach only
-# else, create new session, split windows and run processes
-# Boot Supercollider interpreter in NeoVim
-$TMUX -2 attach-session -t $SESSION || $TMUX -2 \
-  new-session -s $SESSION   \; \
-  split-window -v -p 15 -t $SESSION   \; \
-  send-keys -t 0 "$VIM $args" C-m   \; \
-  send-keys -t 0 ":b *.scd" C-m   \; \
-  send-keys -t 0 ":SCNvimStart" C-m   \; \
-  send-keys -t 1 "TIDAL_BOOT_PATH=$TIDAL_BOOT_PATH GHCI=$GHCI tidal" C-m   \; \
-  select-pane -t 0
+# # Check if tmux session "tidal" is running, attach only
+# # else, create new session, split windows and run processes
+# # Boot Supercollider interpreter in NeoVim
+# $TMUX -2 attach-session -t $SESSION || $TMUX -2 \
+#   new-session -s $SESSION   \; \
+#   split-window -v -p 15 -t $SESSION   \; \
+#   send-keys -t 0 "$VIM $args" C-m   \; \
+#   send-keys -t 0 ":b *.scd" C-m   \; \
+#   send-keys -t 0 ":SCNvimStart" C-m   \; \
+#   send-keys -t 1 "TIDAL_BOOT_PATH=$TIDAL_BOOT_PATH GHCI=$GHCI tidal" C-m   \; \
+#   select-pane -t 0
 

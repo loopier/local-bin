@@ -4,16 +4,24 @@
 
 # if [ "$#" -eq 0 ]; then
 if [ -z "$1" ]; then
-    cd ~/loopier/sketches
-    JAMPATH="jam-$(date +%Y%m%d-%H%M)"
-    mkdir $JAMPATH
-    cd $JAMPATH
-    touch "${JAMPATH}.tidal"
+    # cd ~/loopier/sketches
+    # JAMPATH="jam-$(date +%Y%m%d-%H%M)"
+    # mkdir $JAMPATH
+    # cd $JAMPATH
+    # touch "${JAMPATH}.tidal"
+    JAMPATH=~/loopier/jam/jam-boot/
 else
     JAMPATH=$1
-    cd $JAMPATH
 fi
 
-i3-msg 'workspace 3:Jam'
-# st -e tidalvim &
-xfce4-terminal -T "Jam" --zoom 2 -e ~/.local/bin/jamvim 
+i3-msg 'workspace 4:Jack' 
+cadence &
+catia &
+cd $JAMPATH
+nvim $JAMPATH/*
+
+# i3-msg 'workspace 3:Jam' 
+# xfce4-terminal -T "Jam" --hide-menubar -e ~/.local/bin/jamvim &&
+# xfce4-terminal -T "Jam" --hide-menubar -e nvim $JAMPATH/* &&
+# pwd
+

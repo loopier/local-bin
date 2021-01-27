@@ -2,6 +2,9 @@
 
 # Setup to play live-coding session and record, stream or project it.
 
+i3-msg 'workspace 5:OBS'
+obs & 
+
 jam $1
-i3-msg 'workspace 4:OBS'
-obs &
+# i3-msg 'workspace 3:Jam'
+# xfce4-terminal -T "Guide" --hide-menubar -e nvim ~/loopier/jam/tidals/* &
